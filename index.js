@@ -1,5 +1,5 @@
 const express = require('express');
-var io = require('socket.io');
+const io = require('socket.io');
 
 const PORT = process.env.PORT || 3000;
 
@@ -8,20 +8,36 @@ const server = express()
   .listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
 
-var socket = io.listen(server);
-var countUsers = 0;
-var history = [];
-var count = 0;
-var max = 100;
+let socket = io.listen(server);
+let countUsers = 0;
+let userName = 'user';
+let history = [];
+let typing = [];
+let count = 0;
+let max = 100;
 
 socket.on('connect', function(client){ 
+
+	userName = 'user'+Math.floor(Math.random() * 1000);
 	countUsers++;
+
     socket.emit('usersCount', countUsers);
 
-    client.emit('chatHistory', {'chat' : history, users : countUsers});
+    client.emit('chatHistory', {'chat' : history, users : countUsers, userName : userName});
 
     client.on('addMessage', function(data) {
     	sendMessage(data);
+    });
+
+    client.on('userTyping', function() {
+    	typing.push(userName);
+    	sendTyping();
+    });
+
+    client.on('userStopTyping', function() {
+    	var index = typing.indexOf(userName);
+		if (index !== -1) typing.splice(index, 1);
+    	sendTyping();
     });
 
     client.on('disconnect',function(){
@@ -29,12 +45,14 @@ socket.on('connect', function(client){
 		socket.emit('usersCount', countUsers);
     });
 
-    client.emit('serverResp', '1234');
-
 });
 
 var sendMessage = function(data) {
-	var dt = {'user': data.user, 'msg' : data.message, 'date' : Date.now()};
+	var dt = {'user': userName, 'msg' : data.message, 'date' : Date.now()};
     history.push(dt);
     socket.emit('addMessage', dt);
+}
+
+var sendTyping = function() {
+    socket.emit('usersTyping', {users : typing});
 }

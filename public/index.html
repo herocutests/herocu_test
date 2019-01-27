@@ -41,22 +41,6 @@
 <script>
 var socket = io.connect(window.location.hostname, {reconnect: true});
 
-socket.on( 'connect', function () {
-    console.log( 'connected to server' );
-} );
-
-socket.on( 'disconnect', function () {
-    console.log( 'disconnected to server' );
-} );
-
-socket.on('error', function (data) {
-    console.log(data || 'error');
-});
-
-socket.on('connect_failed', function (data) {
-    console.log(data || 'connect_failed');
-});
-
 var userName;
 
 socket.on('chatHistory', function (data) {

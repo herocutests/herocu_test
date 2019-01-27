@@ -11,11 +11,20 @@
 		}
 		#chat{
 			height: calc( 100vh - 215px);
-			overflow: scroll;
+			overflow-y: scroll;
 		}
 		.user{
 			display: inline;
+			margin: 0 10px;
     		color: #2f16ff;
+		}
+		div{white-space: pre-line}
+		.form-group {
+		    margin-bottom: 0;
+		}
+		.message_container{
+			display: flex;
+			margin-top: 10px;
 		}
 	</style>
 </head>
@@ -29,7 +38,6 @@
 			<label for="exampleTextarea">Message</label>
 			<textarea class="form-control" id="exampleTextarea" rows="3"></textarea>
 		</div>
-		<button  class="btn btn-primary" id='send'>Send</button>
 		<div id="users_count"></div>
 	</section>
  
@@ -52,20 +60,25 @@ socket.on('chatHistory', function (data) {
 	userCount(data.users);
 });
 
+function scrollBottom() {
+	$("#chat").scrollTop($("#chat")[0].scrollHeight);
+}
+
 var userCount = function(count) {
 	$('#users_count').html('В данный момент в чате: <span id="count">'+count+'</span>. Ваш ник: '+userName);
 }
 
 var addToChat = function(el) {
 	var date = new Date(el.date);
-	$('#chat').append('<div>'+date.toLocaleString("en-US")+' <p class="user">'+el.user+'</p>: '+el.msg+'</div>');
+	$('#chat').append('<div class="message_container">'+date.toLocaleString("en-US")+' <p class="user">'+el.user+': </p>'+el.msg+'</div>');
+	scrollBottom();
 }
 
-$('#send').on('click', function() {
+function sendForm() {
 	var msg = $('#exampleTextarea').val();
 	socket.emit('addMessage', {'message': msg});
 	$('#exampleTextarea').val('');
-});
+}
 
 function stopTypingFun() {
 	isTyping = false;
@@ -76,10 +89,17 @@ var stopTyping, isTyping = false;
 
 $( "#exampleTextarea" ).keyup(function() {
 	clearTimeout(stopTyping);
-	stopTyping = setTimeout(stopTypingFun, 2000);
+	stopTyping = setTimeout(stopTypingFun, 1000);
 })
 
-$( "#exampleTextarea" ).keypress(function() {
+$( "#exampleTextarea" ).keypress(function(e) {
+	if(!e.ctrlKey && e.keyCode == 13){
+		e.preventDefault();
+		sendForm();
+		return;
+	}
+	if((e.keyCode == 10 || e.keyCode == 13) && e.ctrlKey)
+		$('#exampleTextarea').val($('#exampleTextarea').val()+'\r\n');
 	if(isTyping)
 		return;
 	isTyping = true;

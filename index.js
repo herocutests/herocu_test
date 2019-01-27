@@ -10,32 +10,30 @@ const server = express()
 
 let socket = io.listen(server);
 let countUsers = 0;
-let userName = 'user';
 let history = [];
 let typing = [];
 let count = 0;
 let max = 100;
 
 socket.on('connect', function(client){ 
-
-	userName = 'user'+Math.floor(Math.random() * 1000);
+	socket.username = 'user'+Math.floor(Math.random() * 1000);
 	countUsers++;
 
     socket.emit('usersCount', countUsers);
 
-    client.emit('chatHistory', {'chat' : history, users : countUsers, userName : userName});
+    client.emit('chatHistory', {'chat' : history, users : countUsers, userName : socket.username});
 
     client.on('addMessage', function(data) {
     	sendMessage(data);
     });
 
     client.on('userTyping', function() {
-    	typing.push(userName);
+    	typing.push(socket.username);
     	sendTyping();
     });
 
     client.on('userStopTyping', function() {
-    	var index = typing.indexOf(userName);
+    	var index = typing.indexOf(socket.username);
 		if (index !== -1) typing.splice(index, 1);
     	sendTyping();
     });
@@ -48,7 +46,7 @@ socket.on('connect', function(client){
 });
 
 var sendMessage = function(data) {
-	var dt = {'user': userName, 'msg' : data.message, 'date' : Date.now()};
+	var dt = {'user': socket.username, 'msg' : data.message, 'date' : Date.now()};
     history.push(dt);
     socket.emit('addMessage', dt);
 }

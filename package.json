@@ -1,9 +1,13 @@
 {
-  "name": "modulesapp",
-  "version": "1.0.0",
-  "stack": "heroku-18",
-  "buildpacks": [
-    {
-      "url": "heroku/nodejs"
-    }
+	"name": "modulesapp",
+	"version": "1.0.0",
+	"stack": "heroku-18",
+	"buildpacks": [
+		{
+			"url": "heroku/nodejs"
+		}
+	],
+	"scripts": {
+		"start": "node index.js"
+	}
 }

@@ -61,8 +61,23 @@ socket.on('connect', function(client){
     client.on('addMessage', function(data) {
     	if(checkUsername() || data.message.split(' ').join('').length == 0)
     		return false;
+    	console.log(history[data.mit]);
+    	console.log(data.mid);
+    	if(history[data.mid] !== undefined){
+    		changeMessageData(data);
+    		console.log(data.message);
+    		return false;
+    	}
     	sendMessage(data, client.secret);
     });
+
+    function changeMessageData(data) {
+    	if(history[data.mid].user != client.secret)
+    		return false;
+    	history[data.mid].msg = data.message;
+    	history[data.mid].isChanged = true;
+    	rewriteMessage(history[data.mid], data.mid);
+    }
 
     client.on('userTyping', function() {
     	if(checkUsername())
@@ -102,6 +117,10 @@ var sendMessage = function(data, cid) {
 
 var sendTyping = function() {
     socket.emit('usersTyping', {users : typing});
+}
+
+var rewriteMessage = function(data, mid) {
+    socket.emit('rewriteMessage', {message: data, mid : mid});
 }
 
 var useradded = function(uname) {

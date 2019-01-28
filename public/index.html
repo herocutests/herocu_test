@@ -84,6 +84,14 @@
 		.unreadMessages {
 		    background-color: #e4e3e3;
 		}
+		.editingMessage{
+			background-color: #e4e3e3;
+		}
+		.editedMsg:before {
+		    content: '(ред.)';
+		    color: #b7b7b7;
+		    position: absolute;
+		}
 	</style>
 </head>
 <body>
@@ -114,7 +122,18 @@ $(function(){
 })
 var socket = io.connect(window.location.hostname, {reconnect: true});
 //window.location.hostname
-var userName = '', lastUsernameMessage, users = [], changeMessage, uid, chatLoaded = false;
+var userName = '', lastUsernameMessage, users = [], changeMessage = '', uid, chatLoaded = false;
+
+var isTabActive = true;
+
+window.onfocus = function () { 
+	isTabActive = true; 
+	$('.message_container').removeClass('unreadMessages');
+}; 
+
+window.onblur = function () { 
+	isTabActive = false; 
+}; 
 
 socket.on('loginUser', function () {
 	userName = '';
@@ -163,6 +182,11 @@ socket.on('chatGoneUser', function (data) {
 	chatAppend('<div class="newUser"> Чат покинул '+data+'</div>');
 });
 
+socket.on('rewriteMessage', function (data) {
+	$( ".editMessage[mid='"+data.mid+"']" ).find('.message').text(data.message.msg);
+	$( ".editMessage[mid='"+data.mid+"']" ).addClass('editedMsg');
+});
+
 function chatAppend(text){
 	$('#chat').append(text);
 	scrollBottom();
@@ -182,7 +206,7 @@ var userCount = function(count) {
 var addToChat = function(el, id) {
 	if(el.user != lastUsernameMessage)
 		chatAppend('<div class="message_container '+(!window.isTabActive ? 'unreadMessages' : '')+'"><div class="date_name">'+getTime(el.date)+' <p class="user" style="color:'+users[el.user].color+'">'+users[el.user].name+': </p></div></div>');
-	chatAppend('<div class="message_container editMessage '+(!window.isTabActive ? 'unreadMessages' : '')+'" mid="'+id+'" '+(el.user == uid ? 'canEdit="true"' : 'canEdit="false"')+'><p class="message">'+el.msg+'</p></div>');
+	chatAppend('<div class="message_container editMessage '+(el.isChanged === true ? 'editedMsg' : '')+' '+(!window.isTabActive ? 'unreadMessages' : '')+'" mid="'+id+'" '+(el.user == uid ? 'canEdit="true"' : 'canEdit="false"')+'><p class="message">'+el.msg+'</p></div>');
 	lastUsernameMessage = el.user;
 	if(!window.isTabActive)
 		$('#chatAudio').get(0).play();
@@ -197,24 +221,22 @@ function getTime(time) {
 $(document).on('click', '.editMessage', function(){ 
     if($(this).attr('canEdit') == "false")
     	return;
+    $('.message_container').removeClass('editingMessage');
+    if(changeMessage == $(this).attr('mid')){
+    	changeMessage = '';
+    	$('#exampleTextarea').val('');
+    	return;
+    }
+    $(this).addClass('editingMessage');
     changeMessage = $(this).attr('mid');
     $('#exampleTextarea').val($(this).find(".message").text());
 });
 
-var isTabActive = true;
-
-window.onfocus = function () { 
-	isTabActive = true; 
-	$('.message_container').removeClass('unreadMessages');
-}; 
-
-window.onblur = function () { 
-	isTabActive = false; 
-}; 
-
 function sendForm() {
+	$('.message_container').removeClass('editingMessage');
 	var msg = $('#exampleTextarea').val();
-	socket.emit('addMessage', {'message': msg});
+	socket.emit('addMessage', {'message': msg, mid : changeMessage});
+	changeMessage = '';
 	$('#exampleTextarea').val('');
 }
 

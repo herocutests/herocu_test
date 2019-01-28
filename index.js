@@ -12,10 +12,11 @@ server = express()
 
 let socket = io.listen(server);
 let countUsers = 0;
-let users = [];
+let users = {};
 let history = [];
 let typing = [];
 let count = 0;
+let loginList = [];
 
 socket.on('connect', function(client){ 
 	client.id = '';
@@ -27,17 +28,27 @@ socket.on('connect', function(client){
 			socket.emit('incorrectUsername');
 			return false;
 		}
-		var index = users.indexOf(data.user);
+		var index = loginList.indexOf(data.user);
 		if (index !== -1) {
 			socket.emit('existUsername');
 			return false;
 		}
-		users.push(data.user);
+		loginList.push(data.user);
 		countUsers++;
+		count++;
     	client.id = data.user;
-    	socket.emit('userLoggedIn', countUsers);
+    	client.secret = count;
+    	users[count] = {'name' : data.user, 'color' : getColor()};
+    	socket.emit('userLoggedIn', {'count' : countUsers, 'uid' : count});
     	useradded(client.id);
     });
+
+    function getColor() {
+    	var r = (Math.round(Math.random()* 127) + 127).toString(16);
+    	var g = (Math.round(Math.random()* 127) + 127).toString(16);
+    	var b = (Math.round(Math.random()* 127) + 127).toString(16);
+    	return '#' + r + g + b;
+    }
 
     function checkUsername() {
     	return client.id == '';
@@ -45,12 +56,12 @@ socket.on('connect', function(client){
 
     socket.emit('usersCount', countUsers);
 
-    client.emit('chatHistory', {'chat' : history, users : countUsers, userName : client.id});
+    client.emit('chatHistory', {'chat' : history, users : countUsers, userList : users});
 
     client.on('addMessage', function(data) {
     	if(checkUsername() || data.message.split(' ').join('').length == 0)
     		return false;
-    	sendMessage(data, client.id);
+    	sendMessage(data, client.secret);
     });
 
     client.on('userTyping', function() {
@@ -71,11 +82,11 @@ socket.on('connect', function(client){
     }
 
     client.on('disconnect',function(){
-    	var index = users.indexOf(client.id);
+    	var index = loginList.indexOf(client.id);
     	sliceTyping();
 		if (index == -1) 
 			return false;
-		users.splice(index, 1);
+		loginList.splice(index, 1);
         countUsers--;
         useroff(client.id);
 		socket.emit('usersCount', countUsers);
@@ -84,9 +95,9 @@ socket.on('connect', function(client){
 });
 
 var sendMessage = function(data, cid) {
-	var dt = {'user': cid, 'msg' : data.message, 'date' : Date.now()};
+	var dt = {'user': cid, 'msg' : data.message, 'date' : Date.now(), 'isChanged' : false};
     history.push(dt);
-    socket.emit('addMessage', dt);
+    socket.emit('addMessage', {'message' : dt, 'id' : (history.length - 1)});
 }
 
 var sendTyping = function() {
@@ -94,7 +105,7 @@ var sendTyping = function() {
 }
 
 var useradded = function(uname) {
-	socket.emit('chatNewUser', uname);
+	socket.emit('chatNewUser', {'user' : uname, 'usersList' : users});
 }
 
 var useroff = function(uname) {

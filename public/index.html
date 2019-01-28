@@ -27,6 +27,7 @@
 		.message_container{
 			display: flex;
 			margin-top: 10px;
+			cursor: default;
 		}
 		.message{
 			word-wrap: break-word;
@@ -108,11 +109,19 @@ $(function(){
 })
 var socket = io.connect(window.location.hostname, {reconnect: true});
 //window.location.hostname
-var userName = '', lastUsernameMessage;
+var userName = '', lastUsernameMessage, users = [], changeMessage, uid;
+
+socket.on('loginUser', function () {
+	userName = '';
+	$('.username').css('display', 'block');
+});
 
 socket.on('chatHistory', function (data) {
+	users = data.userList;
 	if(data.chat.length > 0){
-		data.chat.forEach(addToChat);
+		data.chat.forEach(function(el, i) {
+			addToChat(el, i);
+		});
 	}
 	userCount(data.users);
 });
@@ -127,7 +136,8 @@ socket.on('userLoggedIn', function (data) {
 	$('.userWarning').css('display', 'none');
 	$('.username').css('display', 'none');
 	userName = $('#nickname').val();
-	userCount(data);
+	uid = data.uid;
+	userCount(data.count);
 });
 
 socket.on('incorrectUsername', function (data) {
@@ -137,7 +147,8 @@ socket.on('incorrectUsername', function (data) {
 });
 
 socket.on('chatNewUser', function (data) {
-	chatAppend('<div class="newUser"> К чату присоединился '+data+'</div>');
+	users = data.usersList;
+	chatAppend('<div class="newUser"> К чату присоединился '+data.user+'</div>');
 });
 
 socket.on('chatGoneUser', function (data) {
@@ -160,15 +171,22 @@ var userCount = function(count) {
 	$('#users_count').html(text);
 }
 
-var addToChat = function(el) {
+var addToChat = function(el, id) {
 	var date = new Date(el.date);
 	if(el.user != lastUsernameMessage)
-		chatAppend('<div class="message_container"><div class="date_name">'+date.toLocaleString(["ru-RU"], {hour: '2-digit', minute:'2-digit'})+' <p class="user">'+el.user+': </p></div></div>');
-	chatAppend('<div class="message_container"><p class="message">'+el.msg+'</p></div>');
+		chatAppend('<div class="message_container"><div class="date_name">'+date.toLocaleString(["ru-RU"], {hour: '2-digit', minute:'2-digit'})+' <p class="user" style="color:'+users[el.user].color+'">'+users[el.user].name+': </p></div></div>');
+	chatAppend('<div class="message_container editMessage" mid="'+id+'" '+(el.user == uid ? 'canEdit="true"' : 'canEdit="false"')+'><p class="message">'+el.msg+'</p></div>');
 	lastUsernameMessage = el.user;
 	if(!window.isTabActive)
 		$('#chatAudio').get(0).play();
 }
+
+$(document).on('click', '.editMessage', function(){ 
+    if($(this).attr('canEdit') == "false")
+    	return;
+    changeMessage = $(this).attr('mid');
+    $('#exampleTextarea').val($(this).find(".message").text());
+});
 
 var isTabActive = true;
 
@@ -222,7 +240,7 @@ $( "#exampleTextarea" ).keypress(function(e) {
 });
 
 socket.on( 'addMessage', function (data) {
-	addToChat(data);
+	addToChat(data.message, data.id);
 } );
 
 socket.on( 'usersTyping', function (data) {

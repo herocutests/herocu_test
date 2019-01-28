@@ -109,7 +109,7 @@ $(function(){
 })
 var socket = io.connect(window.location.hostname, {reconnect: true});
 //window.location.hostname
-var userName = '', lastUsernameMessage, users = [], changeMessage, uid;
+var userName = '', lastUsernameMessage, users = [], changeMessage, uid, chatLoaded = false;
 
 socket.on('loginUser', function () {
 	userName = '';
@@ -118,6 +118,9 @@ socket.on('loginUser', function () {
 
 socket.on('chatHistory', function (data) {
 	users = data.userList;
+	if(chatLoaded === true)
+		return;
+	chatLoaded = true;
 	if(data.chat.length > 0){
 		data.chat.forEach(function(el, i) {
 			addToChat(el, i);

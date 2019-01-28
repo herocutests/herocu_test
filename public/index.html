@@ -26,8 +26,10 @@
 		}
 		.message_container{
 			display: flex;
-			margin-top: 10px;
+			padding-top: 10px;
 			cursor: default;
+			background-color: transparent;
+    		transition: all ease 2s;
 		}
 		.message{
 			word-wrap: break-word;
@@ -78,6 +80,9 @@
 		.newUser{
 			text-align: center;
     		color: #ababab;
+		}
+		.unreadMessages {
+		    background-color: #e4e3e3;
 		}
 	</style>
 </head>
@@ -177,8 +182,8 @@ var userCount = function(count) {
 var addToChat = function(el, id) {
 	var date = new Date(el.date);
 	if(el.user != lastUsernameMessage)
-		chatAppend('<div class="message_container"><div class="date_name">'+date.toLocaleString(["ru-RU"], {hour: '2-digit', minute:'2-digit'})+' <p class="user" style="color:'+users[el.user].color+'">'+users[el.user].name+': </p></div></div>');
-	chatAppend('<div class="message_container editMessage" mid="'+id+'" '+(el.user == uid ? 'canEdit="true"' : 'canEdit="false"')+'><p class="message">'+el.msg+'</p></div>');
+		chatAppend('<div class="message_container '+(!window.isTabActive ? 'unreadMessages' : '')+'"><div class="date_name">'+date.toLocaleString(["ru-RU"], {hour: '2-digit', minute:'2-digit'})+' <p class="user" style="color:'+users[el.user].color+'">'+users[el.user].name+': </p></div></div>');
+	chatAppend('<div class="message_container editMessage '+(!window.isTabActive ? 'unreadMessages' : '')+'" mid="'+id+'" '+(el.user == uid ? 'canEdit="true"' : 'canEdit="false"')+'><p class="message">'+el.msg+'</p></div>');
 	lastUsernameMessage = el.user;
 	if(!window.isTabActive)
 		$('#chatAudio').get(0).play();
@@ -195,6 +200,7 @@ var isTabActive = true;
 
 window.onfocus = function () { 
 	isTabActive = true; 
+	$('.message_container').removeClass('unreadMessages');
 }; 
 
 window.onblur = function () { 

@@ -61,11 +61,8 @@ socket.on('connect', function(client){
     client.on('addMessage', function(data) {
     	if(checkUsername() || data.message.split(' ').join('').length == 0)
     		return false;
-    	console.log(history[data.mit]);
-    	console.log(data.mid);
     	if(history[data.mid] !== undefined){
     		changeMessageData(data);
-    		console.log(data.message);
     		return false;
     	}
     	sendMessage(data, client.secret);

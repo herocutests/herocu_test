@@ -29,6 +29,10 @@
 		#usersTyping{
 			position: absolute;
 		}
+		.message{
+			word-wrap: break-word;
+			max-width: 85%;
+		}
 	</style>
 </head>
 <body>
@@ -36,9 +40,8 @@
 		<div id="chat">
 			
 		</div>
-		<p id='usersTyping'></p>
 		<div class="form-group">
-			<label for="exampleTextarea">Message</label>
+			<label for="usersTyping"></label>
 			<textarea class="form-control" id="exampleTextarea" rows="3"></textarea>
 		</div>
 		<div id="users_count"></div>
@@ -73,7 +76,7 @@ var userCount = function(count) {
 
 var addToChat = function(el) {
 	var date = new Date(el.date);
-	$('#chat').append('<div class="message_container">'+date.toLocaleString("en-US")+' <p class="user">'+el.user+': </p>'+el.msg+'</div>');
+	$('#chat').append('<div class="message_container">'+date.toLocaleString(["ru-RU"], {hour: '2-digit', minute:'2-digit'})+' <p class="user">'+el.user+': </p><p class="message">'+el.msg+'</p></div>');
 	scrollBottom();
 }
 

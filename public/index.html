@@ -26,6 +26,9 @@
 			display: flex;
 			margin-top: 10px;
 		}
+		#usersTyping{
+			position: absolute;
+		}
 	</style>
 </head>
 <body>
@@ -49,7 +52,7 @@
 
 <script>
 var socket = io.connect(window.location.hostname, {reconnect: true});
-
+//window.location.hostname
 var userName;
 
 socket.on('chatHistory', function (data) {

@@ -20,11 +20,11 @@ let loginList = [];
 
 socket.on('connect', function(client){ 
 	client.id = '';
-
-	socket.emit('loginUser');
+	client.emit('loginUser');
 
 	client.on('userName', function(data, isUserLoggedResponce) {
 		if (data.user.split(' ').join('').length == 0) {
+			isUserLoggedResponce();
 			client.emit('incorrectUsername');
 			return false;
 		}

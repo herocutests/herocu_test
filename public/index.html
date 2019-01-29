@@ -125,13 +125,14 @@ $(function(){
 })
 var socket = io.connect(window.location.hostname, {reconnect: true});
 //window.location.hostname
-var userName = '', lastUsernameMessage, users = [], changeMessage = '', uid, chatLoaded = false;
+var userName = '', lastUsernameMessage, users = [], changeMessage = '', uid, chatLoaded = false, lastRead = 0;
 
 var isTabActive = true;
 
 window.onfocus = function () { 
 	isTabActive = true; 
-	$('.message_container').removeClass('unreadMessages');
+	socket.emit('readAll');
+	readMessages();
 }; 
 
 window.onblur = function () { 
@@ -142,6 +143,20 @@ socket.on('loginUser', function () {
 	userName = '';
 	$('.username').css('display', 'block');
 });
+
+socket.on('readAll', function (data) {
+	lastRead = data.toMessage;
+	if(!window.isTabActive)
+		return;
+	readMessages();
+});
+
+function readMessages() {
+	$('.unreadMessages').each(function() {
+		if($(this).attr('mid') <= lastRead)
+			$(this).removeClass('unreadMessages');
+	})
+}
 
 socket.on('chatHistory', function (data) {
 	users = data.userList;
@@ -192,7 +207,8 @@ socket.on('rewriteMessage', function (data) {
 
 function chatAppend(text){
 	$('#chat').append(text);
-	scrollBottom();
+	if(window.isTabActive)
+		scrollBottom();
 }
 
 function scrollBottom() {
@@ -208,11 +224,13 @@ var userCount = function(count) {
 
 var addToChat = function(el, id) {
 	if(el.user != lastUsernameMessage)
-		chatAppend('<div class="message_container '+(!window.isTabActive ? 'unreadMessages' : '')+'"><div class="date_name">'+getTime(el.date)+' <p class="user" style="color:'+users[el.user].color+'">'+users[el.user].name+': </p></div></div>');
-	chatAppend('<div class="message_container editMessage '+(el.isChanged === true ? 'editedMsg' : '')+' '+(!window.isTabActive ? 'unreadMessages' : '')+'" mid="'+id+'" '+(el.user == uid ? 'canEdit="true"' : 'canEdit="false"')+'><p class="message">'+el.msg+'</p></div>');
+		chatAppend('<div class="message_container"><div class="date_name">'+getTime(el.date)+' <p class="user" style="color:'+users[el.user].color+'">'+users[el.user].name+': </p></div></div>');
+	chatAppend('<div class="message_container editMessage '+(el.isChanged === true ? 'editedMsg' : '')+' '+(!window.isTabActive || el.unread == true ? 'unreadMessages' : '')+'" mid="'+id+'" '+(el.user == uid ? 'canEdit="true"' : 'canEdit="false"')+'><p class="message">'+el.msg+'</p></div>');
 	lastUsernameMessage = el.user;
 	if(!window.isTabActive)
 		$('#chatAudio').get(0).play();
+	if(window.isTabActive)
+		socket.emit('readAll');
 }
 
 

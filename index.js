@@ -17,12 +17,14 @@ let history = [];
 let typing = [];
 let count = 0;
 let loginList = [];
+let lastReadMessage = 0;
 
 socket.on('connect', function(client){ 
 	client.id = '';
+	client.secret = '';
 	client.emit('loginUser');
 
-	client.on('userName', function(data, isUserLoggedResponce) {
+	client.on('userName', function(data) {
 		if (data.user.split(' ').join('').length == 0) {
 			isUserLoggedResponce();
 			client.emit('incorrectUsername');
@@ -87,6 +89,18 @@ socket.on('connect', function(client){
     	sendTyping();
     });
 
+    client.on('readAll', function() {
+    	if(history.length == 0 || lastReadMessage == history.length - 1 || client.id == '')
+    		return;
+    	for(var i = lastReadMessage; i < history.length; i++){
+    		if(countUsers > 1 && history[i].user == client.secret)
+    			continue;
+    		history[i].unread = false;
+    		lastReadMessage = i;
+    	}
+    	socket.emit('readAll', {'toMessage' : lastReadMessage});
+    });
+
     function sliceTyping() {
     	var index = typing.indexOf(client.id);
 		if (index != -1) typing.splice(index, 1);
@@ -111,7 +125,7 @@ var usersCountSend = function() {
 }
 
 var sendMessage = function(data, cid) {
-	var dt = {'user': cid, 'msg' : data.message, 'date' : Date.now(), 'isChanged' : false};
+	var dt = {'user': cid, 'msg' : data.message, 'date' : Date.now(), 'isChanged' : false, 'unread' : true};
     history.push(dt);
     socket.emit('addMessage', {'message' : dt, 'id' : (history.length - 1)});
 }

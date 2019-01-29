@@ -40,6 +40,7 @@ socket.on('connect', function(client){
     	client.secret = count;
     	users[count] = {'name' : data.user, 'color' : getColor()};
     	client.emit('userLoggedIn', {'count' : countUsers, 'uid' : count});
+    	usersCountSend();
     	useradded(client.id);
     });
 
@@ -53,8 +54,6 @@ socket.on('connect', function(client){
     function checkUsername() {
     	return client.id == '';
     }
-
-    socket.emit('usersCount', countUsers);
 
     client.emit('chatHistory', {'chat' : history, users : countUsers, userList : users});
 
@@ -100,11 +99,16 @@ socket.on('connect', function(client){
 			return false;
 		loginList.splice(index, 1);
         countUsers--;
+        usersCountSend();
         useroff(client.id);
 		socket.emit('usersCount', countUsers);
     });
 
 });
+
+var usersCountSend = function() {
+	socket.emit('usersCount', countUsers);
+}
 
 var sendMessage = function(data, cid) {
 	var dt = {'user': cid, 'msg' : data.message, 'date' : Date.now(), 'isChanged' : false};

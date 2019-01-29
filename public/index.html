@@ -4,6 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>Socket.IO Chat Example</title>
 	<link href="reset.css" rel="stylesheet">
+	<link rel="icon" type="image/png" href="/src/favicon.ico" />
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 	<style>
 		section{
@@ -145,6 +146,8 @@ window.onfocus = function () {
 	socket.emit('readAll');
 	socket.emit('toggleOnline');
 	readMessages();
+	clearInterval(timer);
+	setTitle('Socket.IO Chat Example');
 }; 
 
 window.onblur = function () { 
@@ -250,13 +253,17 @@ var userCount = function(count) {
 	$('#users_count').html(text);
 }
 
+var timer;
+
 var addToChat = function(el, id) {
 	if(el.user != lastUsernameMessage)
 		chatAppend('<div class="message_container"><div class="date_name">'+getTime(el.date)+' <p class="user" style="color:'+users[el.user].color+'">'+users[el.user].name+': </p></div></div>');
 	chatAppend('<div class="message_container editMessage '+(el.isChanged === true ? 'editedMsg' : '')+' '+(!window.isTabActive || el.unread == true ? 'unreadMessages' : '')+'" mid="'+id+'" '+(el.user == uid ? 'canEdit="true"' : 'canEdit="false"')+'><p class="message">'+el.msg+'</p></div>');
 	lastUsernameMessage = el.user;
-	if(!window.isTabActive)
+	if(!window.isTabActive){
 		$('#chatAudio').get(0).play();
+		timer = setInterval(toggleTitle, 1000);
+	}
 	if(window.isTabActive)
 		socket.emit('readAll');
 }
@@ -343,5 +350,14 @@ socket.on( 'usersTyping', function (data) {
 socket.on( 'usersCount', function (data) {
 	$('#count').html(data);
 } );
+
+function toggleTitle() {
+    if (document.title == 'Socket.IO Chat Example') setTitle('Новые сообщения');
+    else setTitle('Socket.IO Chat Example')
+}
+
+function setTitle(title) {
+	document.title = title;
+}
 
 </script>

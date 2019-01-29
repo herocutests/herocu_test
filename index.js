@@ -12,6 +12,7 @@ server = express()
 
 let socket = io.listen(server);
 let countUsers = 0;
+let countOnline = 0;
 let users = {};
 let history = [];
 let typing = [];
@@ -38,9 +39,10 @@ socket.on('connect', function(client){
 		loginList.push(data.user);
 		countUsers++;
 		count++;
+		countOnline++;
     	client.id = data.user;
     	client.secret = count;
-    	users[count] = {'name' : data.user, 'color' : getColor()};
+    	users[count] = {'name' : data.user, 'color' : getColor(), online : true, inChat : true};
     	client.emit('userLoggedIn', {'count' : countUsers, 'uid' : count});
     	usersCountSend();
     	useradded(client.id);
@@ -112,11 +114,31 @@ socket.on('connect', function(client){
 		if (index == -1) 
 			return false;
 		loginList.splice(index, 1);
+		users[client.secret].inChat = false;
         countUsers--;
+        countOnline--;
         usersCountSend();
         useroff(client.id);
 		socket.emit('usersCount', countUsers);
+		client.id = '';
+		client.secret = '';
+		socket.emit('toggleOnline', {'usersList' : users});
     });
+
+    client.on('toggleOnline', function() {
+    	if(checkUsername())
+    		return;
+    	changeOnline();
+    	socket.emit('toggleOnline', {'usersList' : users});
+    });
+
+    function changeOnline() {
+    	users[client.secret].online = users[client.secret].online == false ? true : false;
+    	if(users[client.secret].online == false)
+    		countOnline--;
+    	if(users[client.secret].online == true)
+    		countOnline++;
+    }
 
 });
 
@@ -125,7 +147,9 @@ var usersCountSend = function() {
 }
 
 var sendMessage = function(data, cid) {
-	var dt = {'user': cid, 'msg' : data.message, 'date' : Date.now(), 'isChanged' : false, 'unread' : true};
+	var dt = {'user': cid, 'msg' : data.message, 'date' : Date.now(), 'isChanged' : false, 'unread' : (countOnline > 1 ? false : true)};
+	console.log(countOnline);
+	console.log(dt);
     history.push(dt);
     socket.emit('addMessage', {'message' : dt, 'id' : (history.length - 1)});
 }

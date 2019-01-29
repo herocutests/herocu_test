@@ -25,12 +25,12 @@ socket.on('connect', function(client){
 
 	client.on('userName', function(data, isUserLoggedResponce) {
 		if (data.user.split(' ').join('').length == 0) {
-			socket.emit('incorrectUsername');
+			client.emit('incorrectUsername');
 			return false;
 		}
 		var index = loginList.indexOf(data.user);
 		if (index !== -1) {
-			socket.emit('existUsername');
+			client.emit('existUsername');
 			return false;
 		}
 		loginList.push(data.user);
@@ -39,7 +39,7 @@ socket.on('connect', function(client){
     	client.id = data.user;
     	client.secret = count;
     	users[count] = {'name' : data.user, 'color' : getColor()};
-    	socket.emit('userLoggedIn', {'count' : countUsers, 'uid' : count});
+    	client.emit('userLoggedIn', {'count' : countUsers, 'uid' : count});
     	useradded(client.id);
     });
 

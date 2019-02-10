@@ -7,6 +7,7 @@ import Linkify from 'linkifyjs/react';
 
 const appSection = document.getElementById('chatApp')
 const socket = io.connect(window.location.hostname, {reconnect: true});
+//window.location.hostname
 
 const helperFunctions = {
 	isEnterButton : (e) => {

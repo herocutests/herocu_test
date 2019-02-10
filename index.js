@@ -6,8 +6,8 @@ var PORT = process.env.PORT || 3000;
 var path = require('path');
 
 server = express()
-	.use(express.static(path.resolve(__dirname + '/../public')))
-	.use((req, res) => res.sendFile(__dirname + '/../public/index.html') )
+	.use(express.static(path.resolve( 'build')))
+	.use((req, res) => res.sendFile( 'build/index.html') )
 	.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
 let socket = io.listen(server);

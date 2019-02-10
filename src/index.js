@@ -6,7 +6,7 @@ import io from 'socket.io-client';
 import Linkify from 'linkifyjs/react';
 
 const appSection = document.getElementById('chatApp')
-const socket = io.connect(window.location.hostname, {reconnect: true});
+const socket = io.connect('http://localhost:5000/', {reconnect: true});
 //window.location.hostname
 
 const helperFunctions = {

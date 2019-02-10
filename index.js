@@ -6,8 +6,8 @@ var PORT = process.env.PORT || 3000;
 var path = require('path');
 
 server = express()
-	.use(express.static(path.resolve(__dirname + '/build')))
-	.use((req, res) => res.sendFile(__dirname + '/build/index.html') )
+	.use(express.static(path.resolve(__dirname + '/public')))
+	.use((req, res) => res.sendFile(__dirname + '/public/index.html') )
 	.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
 let socket = io.listen(server);
@@ -26,30 +26,26 @@ socket.on('connect', function(client){
 	client.emit('loginUser');
 
 	client.on('userName', function(data) {
-		let username = data.user.split(' ').join('');
-		if (username.length == 0) {
+		if (data.user.split(' ').join('').length == 0) {
+			isUserLoggedResponce();
 			client.emit('incorrectUsername');
 			return false;
 		}
-		var index = loginList.indexOf(username);
+		var index = loginList.indexOf(data.user);
 		if (index !== -1) {
 			client.emit('existUsername');
 			return false;
 		}
-		if(client.id != ''){
-			client.emit('returnUsername', {'uid' : client.secret});
-			return;
-		}
-		loginList.push(username);
+		loginList.push(data.user);
 		countUsers++;
 		count++;
 		countOnline++;
-    	client.id = username;
+    	client.id = data.user;
     	client.secret = count;
-    	users[count] = {'name' : username, 'color' : getColor(), online : true, inChat : true};
-    	client.emit('userLoggedIn', {'uid' : count});
+    	users[count] = {'name' : data.user, 'color' : getColor(), online : true, inChat : true};
+    	client.emit('userLoggedIn', {'count' : countUsers, 'uid' : count});
     	usersCountSend();
-    	useradded(count);
+    	useradded(client.id);
     });
 
     function getColor() {
@@ -150,8 +146,10 @@ var usersCountSend = function() {
 	socket.emit('usersCount', countUsers);
 }
 
-var sendMessage = function(data, cid, system = false) {
-	var dt = {'user': cid, 'msg' : data.message, 'date' : Date.now(), 'isChanged' : false, 'unread' : (countOnline > 1 ? false : true), isSystem : system};
+var sendMessage = function(data, cid) {
+	var dt = {'user': cid, 'msg' : data.message, 'date' : Date.now(), 'isChanged' : false, 'unread' : (countOnline > 1 ? false : true)};
+	console.log(countOnline);
+	console.log(dt);
     history.push(dt);
     socket.emit('addMessage', {'message' : dt, 'id' : (history.length - 1)});
 }
@@ -164,11 +162,10 @@ var rewriteMessage = function(data, mid) {
     socket.emit('rewriteMessage', {message: data, mid : mid});
 }
 
-var useradded = function(uid) {
-	sendMessage({message : 'К чату присоединился '+users[uid]['name']}, -1, true);
-	socket.emit('chatNewUser', {'uid' : uid, 'user' : users[uid]});
+var useradded = function(uname) {
+	socket.emit('chatNewUser', {'user' : uname, 'usersList' : users});
 }
 
 var useroff = function(uname) {
-	sendMessage({message : 'Чат покинул '+uname}, -1, true);
+	socket.emit('chatGoneUser', uname);
 }

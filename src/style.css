@@ -1,0 +1,105 @@
+#chatSection{
+	max-width: 1000px;
+	margin: auto;
+}
+#chat{
+	height: calc( 100vh - 165px);
+    margin-bottom: 20px;
+    overflow-y: scroll;
+}
+.user{
+	display: inline;
+	margin: 0 10px;
+	color: #2f16ff;
+}
+div{white-space: pre-line}
+.form-group {
+	margin-bottom: 0;
+}
+.message_container{
+	display: flex;
+	padding: 5px 0;
+	cursor: default;
+	background-color: transparent;
+	transition: all ease 2s;
+}
+.message{
+	word-wrap: break-word;
+    max-width: calc( 100% - 54px);
+    margin-bottom: 0;
+    padding-left: 54px;
+}
+.username{
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	background-color: #3f4040e6;
+	text-align: center;
+}
+.username h1{
+    font-size: 31px;
+    margin-top: calc((100vh - 200px) / 2);
+    color: white;
+    margin-bottom: 0;
+}
+.username input{
+	width: 300px;
+	background: none;
+	border: none;
+	border-bottom: 1px solid white;
+	color: white;
+	text-align: center;
+}
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+    outline: none;
+}
+.date_name{
+	min-width: 200px;
+}
+#usersTyping{
+	margin-bottom: 0;
+	position: absolute;
+	top: calc( 100vh - 168px);
+}
+.userWarning{
+	color: #ff8181;
+}
+.newUser{
+	text-align: center;
+	color: #ababab;
+}
+.unreadMessages {
+    background-color: #e4e3e3;
+}
+.editingMessage{
+	background-color: #e4e3e3;
+}
+.editedMsg:before {
+    content: '(ред.)';
+    color: #b7b7b7;
+    position: relative;
+}
+.editedMsg .message{
+	padding-left: 18px;
+}
+.user_gone {
+    color: #ababab;
+}
+
+.userList p {
+    display: inline;
+    margin-right: 10px;
+}
+.user_online {
+    color: #12b31f;
+}
+.dateMessage{
+	padding-top: 10px;
+    padding-bottom: 5px;
+    color: #377fab;
+    font-size: 20px;
+}

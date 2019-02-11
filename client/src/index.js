@@ -6,7 +6,7 @@ import io from 'socket.io-client';
 import Linkify from 'linkifyjs/react';
 
 const appSection = document.getElementById('chatApp')
-const socket = io.connect('https://agnia.herokuapp.com/', {secure: true});
+const socket = io.connect('http://localhost:5000', {secure: true});
 //window.location.hostname
 
 const helperFunctions = {

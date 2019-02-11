@@ -5,6 +5,7 @@ import './reset.css';
 import io from 'socket.io-client';
 import Linkify from 'linkifyjs/react';
 
+const stickerPath = "https://s.tcdn.co/b9b/62e/b9b62ef1-afaf-3edf-b64c-ddce090ef749/"; 
 const appSection = document.getElementById('chatApp')
 const socket = io.connect(window.location.hostname, {secure: true});
 //window.location.hostname
@@ -153,8 +154,8 @@ class ChatContainer extends React.Component {
 		return (
 		<section id='chatSection'>
 			<Chat uid={this.state.uid} usersList={this.state.usersList} editMessage={this.messageEdited} edditingMessage={this.state.midEdit} />
-			<UserTyping uid={this.state.uid} usersList={this.state.usersList}/>
 			<MessageForm editMessage={this.state.message} midEdit={this.state.midEdit} messageEdited={this.messageEdited} />
+			<Stickers />
 			<UsersInfo usersList={this.state.usersList}/>
 		</section>
 		);
@@ -223,12 +224,14 @@ class Chat extends React.Component {
 					}
 
 					return [
-						(dateChanged === true) ?  
-						<div className="newUser dateMessage">{date}</div>
-					 	: '',
+						(dateChanged === true) ? <SystemMessage message={date} isDate={true} />  : '',
+						(this.state.chatHistory[i]['isSystem'] === false && userChanged === true) ? 
+							<UsernameItem userName={this.props.usersList[this.lastMessageUid]['name']}  userColor={this.props.usersList[this.lastMessageUid]['color']} date={this.state.chatHistory[i]['date']} unread={this.state.chatHistory[i]['unread']} />: '',
 						(this.state.chatHistory[i]['isSystem'] === true) ?
-						<SystemMessage message={this.state.chatHistory[i]} /> :
-						<MessageItem message={this.state.chatHistory[i]} userChanged={userChanged} userName={(userChanged === true) ? this.props.usersList[this.lastMessageUid]['name'] : ''}  userColor={(userChanged === true) ? this.props.usersList[this.lastMessageUid]['color'] : ''} uid={this.props.uid} editMessage={this.editMessage} mid={i} isEdditing={this.props.edditingMessage === i ? true : false} />
+							<SystemMessage message={this.state.chatHistory[i]['msg']} isDate="false" /> : 
+							(this.state.chatHistory[i]['isSticker'] === false) ?
+								<MessageItem message={this.state.chatHistory[i]} uid={this.props.uid} editMessage={this.editMessage} mid={i} isEdditing={this.props.edditingMessage === i ? true : false} /> :
+								<div className={(this.state.chatHistory[i]['unread'] === true ? 'unreadMessages stickerMessage message_container' : 'stickerMessage')}><SingleSticker i={this.state.chatHistory[i]['msg']} /></div>
 					]
 					
 				})}
@@ -268,7 +271,47 @@ class Chat extends React.Component {
 class SystemMessage extends React.Component {
 	render() { 
 		return (
-		    <div className="newUser">{this.props.message['msg']}</div>
+		    <div className={this.props.isDate === true ? "newUser dateMessage" : 'newUser'}>{this.props.message}</div>
+		)
+	}
+}
+
+class Stickers extends React.Component {
+	render() { 
+		var img = [];
+		for(var i = 1; i <= 48; i++){ 
+			img.push(<SingleSticker click={this.sendSticker} i={i} />)
+		}
+		return (
+			<div className='stickerModal'>
+				{img}
+	        </div>
+		)
+	}
+
+	sendSticker = (i) => {
+		socket.emit('addSticker', {'message': i.toString()});
+	}
+}
+
+class SingleSticker extends React.Component {
+	render() { 
+		return (
+		    <img key={this.props.i+'_sticker'} src={stickerPath+this.props.i+".png"} className="sticker" onClick={() => this.props.click(this.props.i)} />
+		)
+	}
+}
+
+class UsernameItem extends React.Component {
+	render() { 
+		let unread = (this.props.unread === true ? 'unreadMessages ' : '');
+		let userMessageClass = "message_container "+unread;
+		return (
+			<div className={userMessageClass}>
+				<div className="date_name">{helperFunctions.parseTime(this.props.date)}
+					<p className="user" style={{'color' : this.props.userColor}} >{this.props.userName}</p>
+				</div>
+			</div>
 		)
 	}
 }
@@ -278,19 +321,9 @@ class MessageItem extends React.Component {
 		let unread = (this.props.message['unread'] === true ? 'unreadMessages ' : '');
 		let editting = (this.props.isEdditing === true ? 'editingMessage' : '');
 		let messageClass = "message_container " + (this.props.message['isChanged'] === true ? 'editedMsg ' : '') + unread + ' ' + editting;
-		let userMessageClass = "message_container "+unread;
 		return (
-		    <div>
-				{(this.props.userChanged === true) ?  
-					<div className={userMessageClass}>
-						<div className="date_name">{helperFunctions.parseTime(this.props.message['date'])}
-							<p className="user" style={{'color' : this.props.userColor}} >{this.props.userName}</p>
-						</div>
-					</div>
-				 : '' }
-			    <div className={messageClass}>
-			    <Linkify tagName="p" className="message" onClick={() => this.props.editMessage(this.props.uid === this.props.message['user'] ? this.props.mid : '')}>{this.props.message['msg']}</Linkify>
-				</div>
+			<div className={messageClass}>
+			<Linkify tagName="p" className="message" onClick={() => this.props.editMessage(this.props.uid === this.props.message['user'] ? this.props.mid : '')}>{this.props.message['msg']}</Linkify>
 			</div>
 		)
 	}
@@ -299,12 +332,13 @@ class MessageItem extends React.Component {
 class UsersInfo extends React.Component { 
 	state = {
 		count : 0,
+		text : ''
 	}
 
 	render() { 
 		return (
 		    <div>
-		    	<div id="users_count">В чате {this.state.count} пользовате{helperFunctions.numericEnding(this.state.count, 'ль', 'ля', 'лей')}.</div>
+		    	<div id="users_count">В чате {this.state.count} пользовате{helperFunctions.numericEnding(this.state.count, 'ль', 'ля', 'лей')}. {this.state.text}</div>
 				<div className="userList">
 				    {Object.keys(this.props.usersList).map(i => (
 				    	(this.props.usersList[i]['inChat'] === false ) ? '' : 
@@ -329,9 +363,21 @@ class UsersInfo extends React.Component {
 		socket.on('usersCount', (data) => {
 			this.setCount(data);
 		});
+		socket.on( 'usersTyping', (data) => {
+			let users = '';
+			var index = data.users.indexOf(this.props.uid);
+			if (index != -1) data.users.splice(index, 1);
+			for(var i = 0; i < data.users.length; i++){
+				users += this.props.usersList[data.users[i]]['name']+(i === data.users.length - 1 ? ' печата'+(data.users.length > 1 ? 'ют' : 'ет')+' сообщение' : ', ');
+			}
+			this.setState({
+				text : users
+			});
+		})
     }
 }
 
+/*
 class UserTyping extends React.Component { 
 	state = {
 		text : '',
@@ -345,13 +391,19 @@ class UserTyping extends React.Component {
 
 	componentWillMount() {
 		socket.on( 'usersTyping', (data) => {
+			let users = '';
+			var index = data.users.indexOf(this.props.uid);
+			if (index != -1) data.users.splice(index, 1);
+			for(var i = 0; i < data.users.length; i++){
+				users += this.props.usersList[data.users[i]]['name']+(i === data.users.length - 1 ? ' печата'+(data.users.length > 1 ? 'ют' : 'ет')+' сообщение:' : ', ');
+			}
 			this.setState({
-				text : ( (data.users.length === 0) ? '' : data.users.join(', ')+' печата'+(data.users.length > 1 ? 'ют' : 'ет')+' сообщение:')
+				text : users
 			});
 		})
     }
 }
-
+*/
 
 class MessageForm extends React.Component { 
 	isTyping = false;
@@ -407,9 +459,9 @@ class Audio extends React.Component {
 	render() { 
 		return (
 		   	<audio id="chatAudio">
-			   	<source src="/src/notify.ogg" type="audio/ogg" />
-			   	<source src="/src/notify.mp3" type="audio/mpeg" />
-			   	<source src="/src/notify.wav" type="audio/wav" />
+			   	<source src={process.env.PUBLIC_URL+"/notify.ogg"} type="audio/ogg" />
+			   	<source src={process.env.PUBLIC_URL+"/notify.mp3"} type="audio/mpeg" />
+			   	<source src={process.env.PUBLIC_URL+"/notify.wav"} type="audio/wav" />
 		   	</audio>
 		);
 	} 
@@ -428,7 +480,7 @@ class App extends React.Component {
 		        <div>
 		        	<ChatContainer uid={this.state.uid} />
 		        	{(this.state.isUserSiggedIn === false) ? <LoginApp /> : ''}
-		        	{(this.state.isWindowOnFocus === false) ? <Audio /> : ''}
+		        	<Audio />
 		        </div>
 		        );
 	}
@@ -456,8 +508,10 @@ class App extends React.Component {
 		});
 		socket.on('addMessage', (data) => {
 			this.readAll();
-			if(this.state.isUserSiggedIn === true && this.state.isWindowOnFocus === false)
+			if(this.state.isUserSiggedIn === true && this.state.isWindowOnFocus === false){
 				document.getElementById('chatAudio').play();
+				document.title = "New messages";
+			}
 		});
 		socket.on('userLoggedIn', (data) => {
 			this.setUserStatus(true);
@@ -471,6 +525,7 @@ class App extends React.Component {
 		});
 		window.addEventListener("focus", (event) => {
 			this.setWindowFocus(true);
+			document.title = "Chat";
 			socket.emit('toggleOnline');
 			this.readAll();
 		})

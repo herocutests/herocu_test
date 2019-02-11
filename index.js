@@ -6,7 +6,7 @@ var PORT = process.env.PORT || 3000;
 var path = require('path');
 
 server = express()
-	.use(express.static(path.resolve(__dirname + '/client/build')))
+	.use(express.static(path.resolve(__dirname + '/client')))
 	.use((req, res) => res.sendFile(__dirname + '/client/build/index.html') )
 	.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
@@ -75,6 +75,12 @@ socket.on('connect', function(client){
     	sendMessage(data, client.secret);
     });
 
+    client.on('addSticker', function(data) {
+    	if(checkUsername() || data.message.split(' ').join('').length == 0)
+    		return false;
+    	sendMessage(data, client.secret, false, true);
+    });
+
     function changeMessageData(data) {
     	if(history[data.mid].user != client.secret)
     		return false;
@@ -86,7 +92,7 @@ socket.on('connect', function(client){
     client.on('userTyping', function() {
     	if(checkUsername())
     		return false;
-    	typing.push(client.id);
+    	typing.push(client.secret);
     	sendTyping();
     });
 
@@ -108,7 +114,7 @@ socket.on('connect', function(client){
     });
 
     function sliceTyping() {
-    	var index = typing.indexOf(client.id);
+    	var index = typing.indexOf(client.secret);
 		if (index != -1) typing.splice(index, 1);
     }
 
@@ -150,8 +156,8 @@ var usersCountSend = function() {
 	socket.emit('usersCount', countUsers);
 }
 
-var sendMessage = function(data, cid, system = false) {
-	var dt = {'user': cid, 'msg' : data.message, 'date' : Date.now(), 'isChanged' : false, 'unread' : (countOnline > 1 ? false : true), isSystem : system};
+var sendMessage = function(data, cid, system = false, sticker = false) {
+	var dt = {'user': cid, 'msg' : data.message, 'date' : Date.now(), 'isChanged' : false, 'unread' : (countOnline > 1 ? false : true), isSystem : system, isSticker: sticker};
     history.push(dt);
     socket.emit('addMessage', {'message' : dt, 'id' : (history.length - 1)});
 }

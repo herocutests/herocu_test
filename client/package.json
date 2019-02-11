@@ -5,6 +5,7 @@
   "dependencies": {
     "linkifyjs": "^2.1.8",
     "react": "^16.8.1",
+    "react-bootstrap-modal": "^4.2.0",
     "react-dom": "^16.8.1",
     "react-scripts": "2.1.4",
     "socket.io": "^2.2.0",

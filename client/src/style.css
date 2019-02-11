@@ -3,8 +3,8 @@
 	margin: auto;
 }
 #chat{
-	height: calc( 100vh - 165px);
-    margin-bottom: 20px;
+	height: calc( 100vh - 198px);
+    margin-bottom: 54px;
     overflow-y: scroll;
 }
 .user{
@@ -84,7 +84,7 @@ button:focus {
     position: relative;
 }
 .editedMsg .message{
-	padding-left: 18px;
+	padding-left: 15px;
 }
 .user_gone {
     color: #ababab;
@@ -102,4 +102,26 @@ button:focus {
     padding-bottom: 5px;
     color: #377fab;
     font-size: 20px;
+}
+.sticker{
+	max-width: 192px;
+}
+.stickerModal{
+	height: 30px;
+    max-width: 1000px;
+    overflow-y: hidden;
+    position: absolute;
+    top: calc( 100vh - 175px);
+    background-color: white;
+    padding: 0 10px;
+    box-shadow: 0 0 5px 2px #d4d4d4;
+    transition: all ease .2s;
+}
+.stickerModal:hover{height: 208px;overflow-y: scroll; top: calc( 100vh - 354px);padding: 10px;}
+.stickerModal .sticker{
+	max-width: 92px;
+}
+.stickerMessage{
+	padding-left: 54px;
+	transition: background ease 2s;
 }

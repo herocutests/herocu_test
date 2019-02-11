@@ -156,7 +156,7 @@ class ChatContainer extends React.Component {
 			<Chat uid={this.state.uid} usersList={this.state.usersList} editMessage={this.messageEdited} edditingMessage={this.state.midEdit} />
 			<MessageForm editMessage={this.state.message} midEdit={this.state.midEdit} messageEdited={this.messageEdited} />
 			<Stickers />
-			<UsersInfo usersList={this.state.usersList}/>
+			<UsersInfo usersList={this.state.usersList} uid={this.state.uid} />
 		</section>
 		);
 	} 
@@ -231,7 +231,7 @@ class Chat extends React.Component {
 							<SystemMessage message={this.state.chatHistory[i]['msg']} isDate="false" /> : 
 							(this.state.chatHistory[i]['isSticker'] === false) ?
 								<MessageItem message={this.state.chatHistory[i]} uid={this.props.uid} editMessage={this.editMessage} mid={i} isEdditing={this.props.edditingMessage === i ? true : false} /> :
-								<div className={(this.state.chatHistory[i]['unread'] === true ? 'unreadMessages stickerMessage message_container' : 'stickerMessage')}><SingleSticker i={this.state.chatHistory[i]['msg']} /></div>
+								<div className={(this.state.chatHistory[i]['unread'] === true ? 'unreadMessages stickerMessage' : 'stickerMessage')}><SingleSticker i={this.state.chatHistory[i]['msg']} /></div>
 					]
 					
 				})}

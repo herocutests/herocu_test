@@ -7,7 +7,7 @@ import Linkify from 'linkifyjs/react';
 
 const stickerPath = "https://s.tcdn.co/b9b/62e/b9b62ef1-afaf-3edf-b64c-ddce090ef749/"; 
 const appSection = document.getElementById('chatApp')
-const socket = io.connect(window.location.hostname, {secure: true});
+const socket = io.connect('http://localhost:5000', {secure: true});
 //window.location.hostname
 
 const helperFunctions = {

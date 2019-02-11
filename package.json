@@ -19,7 +19,11 @@
   "devDependencies": {
     "request": "^2.81.0",
     "tape": "^4.7.0",
-    "WebSocket": "*"
+    "WebSocket": "*",
+    "express": "*",
+    "express-session": "^1.15.6",
+    "express-socket.io-session": "^1.3.5",
+    "socket.io": "^2.2.0"
   },
   "stack": "heroku-18"
 }

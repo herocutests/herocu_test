@@ -6,8 +6,9 @@ import io from 'socket.io-client';
 import Linkify from 'linkifyjs/react';
 
 const stickerPath = "https://s.tcdn.co/b9b/62e/b9b62ef1-afaf-3edf-b64c-ddce090ef749/"; 
-const appSection = document.getElementById('chatApp')
-const socket = io.connect(window.location.hostname, {secure: true});
+const appSection = document.getElementById('chatApp');
+const url = (window.location.hostname == "localhost" ? "http://localhost:5000/" : window.location.hostname)
+const socket = io.connect(url, {secure: true});
 //window.location.hostname
 
 const helperFunctions = {
@@ -171,9 +172,9 @@ class ChatContainer extends React.Component {
 					<Stickers />
 				</div>
 			</div>
+			<UserTyping uid={this.state.uid} usersList={this.state.usersList}/>
 			<div className="row">
 				<div className="col-12">
-					<UserTyping uid={this.state.uid} usersList={this.state.usersList}/>
 					<MessageForm editMessage={this.state.message} midEdit={this.state.midEdit} messageEdited={this.messageEdited} />
 					<UsersInfo usersList={this.state.usersList} />
 				</div>

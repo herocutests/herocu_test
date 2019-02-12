@@ -124,6 +124,7 @@ class ChatContainer extends React.Component {
 		usersList : {},
 		uid : 0,
 		midEdit : -1,
+		showStickers : false,
 		message : ''
 	}
 
@@ -150,13 +151,33 @@ class ChatContainer extends React.Component {
 		this.setEditMessage(mid, message);
 	}
 
+	toggleStickers = (e) => {
+		console.log(this.state.showStickers);
+		this.setState({
+			showStickers : (this.state.showStickers === false ? true : false)
+		});
+	}
+
 	render() { 
+		let transition = 'chatContainerTransition ';
 		return (
-		<section id='chatSection'>
-			<Chat uid={this.state.uid} usersList={this.state.usersList} editMessage={this.messageEdited} edditingMessage={this.state.midEdit} />
-			<MessageForm editMessage={this.state.message} midEdit={this.state.midEdit} messageEdited={this.messageEdited} />
-			<Stickers />
-			<UsersInfo usersList={this.state.usersList} uid={this.state.uid} />
+		<section id='chatSection' className="container">
+			<div className="row">
+				<div className={this.state.showStickers === false ? transition+'col-11' : transition+"col-8"}>
+					<Chat uid={this.state.uid} usersList={this.state.usersList} editMessage={this.messageEdited} edditingMessage={this.state.midEdit} />
+				</div>
+				<div className={this.state.showStickers === false ? transition+'col-1' : transition+"col-4"}>
+					<div className="slideStickers" onClick={(e) => this.toggleStickers(e)} > </div>
+					<Stickers />
+				</div>
+			</div>
+			<div className="row">
+				<div className="col-12">
+					<UserTyping uid={this.state.uid} usersList={this.state.usersList}/>
+					<MessageForm editMessage={this.state.message} midEdit={this.state.midEdit} messageEdited={this.messageEdited} />
+					<UsersInfo usersList={this.state.usersList} />
+				</div>
+			</div>
 		</section>
 		);
 	} 
@@ -320,7 +341,7 @@ class MessageItem extends React.Component {
 	render() { 
 		let unread = (this.props.message['unread'] === true ? 'unreadMessages ' : '');
 		let editting = (this.props.isEdditing === true ? 'editingMessage' : '');
-		let messageClass = "message_container " + (this.props.message['isChanged'] === true ? 'editedMsg ' : '') + unread + ' ' + editting;
+		let messageClass = "message_container " + (this.props.message['isChanged'] === true ? 'editedMsg ' : '') + unread + ' ' + editting +' '+ (this.props.uid === this.props.message['user'] ? 'pointer' : '');
 		return (
 			<div className={messageClass}>
 			<Linkify tagName="p" className="message" onClick={() => this.props.editMessage(this.props.uid === this.props.message['user'] ? this.props.mid : '')}>{this.props.message['msg']}</Linkify>
@@ -332,13 +353,12 @@ class MessageItem extends React.Component {
 class UsersInfo extends React.Component { 
 	state = {
 		count : 0,
-		text : ''
 	}
 
 	render() { 
 		return (
 		    <div>
-		    	<div id="users_count">В чате {this.state.count} пользовате{helperFunctions.numericEnding(this.state.count, 'ль', 'ля', 'лей')}. {this.state.text}</div>
+		    	<div id="users_count">В чате {this.state.count} пользовате{helperFunctions.numericEnding(this.state.count, 'ль', 'ля', 'лей')}.</div>
 				<div className="userList">
 				    {Object.keys(this.props.usersList).map(i => (
 				    	(this.props.usersList[i]['inChat'] === false ) ? '' : 
@@ -363,21 +383,9 @@ class UsersInfo extends React.Component {
 		socket.on('usersCount', (data) => {
 			this.setCount(data);
 		});
-		socket.on( 'usersTyping', (data) => {
-			let users = '';
-			var index = data.users.indexOf(this.props.uid);
-			if (index != -1) data.users.splice(index, 1);
-			for(var i = 0; i < data.users.length; i++){
-				users += this.props.usersList[data.users[i]]['name']+(i === data.users.length - 1 ? ' печата'+(data.users.length > 1 ? 'ют' : 'ет')+' сообщение' : ', ');
-			}
-			this.setState({
-				text : users
-			});
-		})
     }
 }
 
-/*
 class UserTyping extends React.Component { 
 	state = {
 		text : '',
@@ -403,7 +411,6 @@ class UserTyping extends React.Component {
 		})
     }
 }
-*/
 
 class MessageForm extends React.Component { 
 	isTyping = false;
@@ -508,7 +515,7 @@ class App extends React.Component {
 		});
 		socket.on('addMessage', (data) => {
 			this.readAll();
-			if(this.state.isUserSiggedIn === true && this.state.isWindowOnFocus === false){
+			if(this.state.isUserSiggedIn === true && this.state.isWindowOnFocus === false && data.message.isSystem === false){
 				document.getElementById('chatAudio').play();
 				document.title = "New messages";
 			}

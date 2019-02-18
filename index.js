@@ -130,16 +130,16 @@ socket.on('connect', function(client){
         usersCountSend();
         useroff(client.id);
 		socket.emit('usersCount', countUsers);
+		updateUserInfo(client.secret);
 		client.id = '';
 		client.secret = '';
-		socket.emit('toggleOnline', {'usersList' : users});
     });
 
     client.on('toggleOnline', function() {
     	if(checkUsername())
     		return;
     	changeOnline();
-    	socket.emit('toggleOnline', {'usersList' : users});
+    	updateUserInfo(client.secret);
     });
 
     function changeOnline() {
@@ -157,7 +157,7 @@ var usersCountSend = function() {
 }
 
 var sendMessage = function(data, cid, system = false, sticker = false) {
-	var dt = {'user': cid, 'msg' : data.message, 'date' : Date.now(), 'isChanged' : false, 'unread' : (countOnline > 1 ? false : true), isSystem : system, isSticker: sticker};
+	var dt = {'user': cid, 'msg' : data.message, 'date' : Date.now(), 'isChanged' : false, 'unread' : (countOnline > 1 || countUsers === 1 ? false : true), isSystem : system, isSticker: sticker};
     history.push(dt);
     socket.emit('addMessage', {'message' : dt, 'id' : (history.length - 1)});
 }
@@ -177,4 +177,8 @@ var useradded = function(uid) {
 
 var useroff = function(uname) {
 	sendMessage({message : 'Чат покинул '+uname}, -1, true);
+}
+
+var updateUserInfo = function(uid) {
+	socket.emit('toggleOnline', {'uid' : uid, 'info' : users[uid] });
 }

@@ -98,10 +98,10 @@ button:focus {
     color: #12b31f;
 }
 .dateMessage{
-	padding-top: 10px;
-    padding-bottom: 5px;
-    color: #377fab;
-    font-size: 20px;
+	color: #377fab;
+    padding-top: 15px;
+    border-top: 1px solid #e5e3e3;
+    margin: 10px auto 0px;
 }
 .sticker{
 	max-width: 192px;

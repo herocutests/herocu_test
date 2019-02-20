@@ -21,7 +21,7 @@ class ChatMessagesBlock extends Component {
 
 	getStickers(){
 	    let img = [];
-		Object.keys(this.stickerPacks).map(i => {
+		Object.keys(this.stickerPacks).forEach (i => {
 			img.push(<p className="ctickerTitle" key={"stickerTitle_"+i} >{this.stickerPacks[i]['title']}</p>);
 			for(var k = 1; k <= this.stickerPacks[i]['count']; k++){ 
 				img.push(<Sticker key={"sticker_"+i+'_'+k} i={this.stickerPacks[i]['url']+k} sendSticker={this.props.sendSticker} />);

@@ -40,8 +40,7 @@ function rootReducer(state = initialState, action) {
 	}
 	if (action.type === TOGGLE_STICKERS) {
 		return Object.assign({}, state, {
-			isStickersShown : state.isStickersShown === false ? true : false,
-	        uid: action.uid
+			isStickersShown : state.isStickersShown === false ? true : false
 	    });
 	}
 	if (action.type === SET_ERROR) {
@@ -61,8 +60,8 @@ function rootReducer(state = initialState, action) {
 	    });
 	}
 	if (action.type === READ_MESSAGES) {
-		for(var i = state.lastRead; i <= action.toMessage; i++){
-			state.messagesList[i]['unread'] = {...state, messagesList: {...state.messagesList, [i]: {...state.messagesList[i], ['unread'] : false}}}
+		for(let i = state.lastRead; i <= action.toMessage; i++){
+			state.messagesList[i]['unread'] = {...state, messagesList: {...state.messagesList, [i]: {...state.messagesList[i], 'unread' : false}}}
 	    }
 	    return {...state, lastRead: action.toMessage}
 	}
@@ -70,7 +69,7 @@ function rootReducer(state = initialState, action) {
 		var users = "";
 		var index = action.users.indexOf(state.uid);
 		if (index !== -1) action.users.splice(index, 1);
-		for(var i = 0; i < action.users.length; i++){
+		for(let i = 0; i < action.users.length; i++){
 			users += state.usersList[action.users[i]]['name']+(i === action.users.length - 1 ? ' печата'+(action.users.length > 1 ? 'ют' : 'ет')+' сообщение:' : ', ');
 		}
 		return {...state, usersTyping: users}

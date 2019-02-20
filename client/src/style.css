@@ -114,7 +114,7 @@ button:focus {
     width: calc(100% - 30px);
     float: left;
     opacity: 1;
-    transition: opacity ease .01s .3s;
+    //transition: opacity ease .01s .3s;
 }
 .stickerModal .sticker{
 	max-width: 25%;
@@ -143,14 +143,14 @@ button:focus {
     width: 30px;
     height: calc( 100vh - 160px);
     position: absolute;
-    transition: all ease .4s;
+    //transition: all ease .4s;
 }
 
 .col-1 .stickerModal{
 	width: 0;
 	opacity: 0;
 	overflow-y: hidden;
-	transition: opacity ease .01s;
+	//transition: opacity ease .01s;
 }
 
 .col-4 .slideStickers:before{
@@ -158,5 +158,10 @@ button:focus {
 }
 
 .chatContainerTransition{
-	transition: max-width ease .4s;
+	//transition: max-width ease .4s;
+}
+
+.ctickerTitle{
+	color: #7c7c7c;
+    padding: 20px 0 10px;
 }

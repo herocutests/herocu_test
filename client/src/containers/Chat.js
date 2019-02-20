@@ -9,7 +9,7 @@ import {editMessage} from "../actions/index";
 class Chat extends Component {
 	getSystemMessage(message, isDate = false){
 		return (
-		    <div className={isDate === true ? "newUser dateMessage" : 'newUser'}>{message}</div>
+		    <div key={"system_message"+message} className={isDate === true ? "newUser dateMessage" : 'newUser'}>{message}</div>
 		)
 	}
 
@@ -103,8 +103,8 @@ class Chat extends Component {
 							this.getSystemMessage(chat['msg']) : 
 							(chat['isSticker'] === false) ?
 								this.getMessageMessage(i) :
-								<div className={(chat['unread'] === true ? 'unreadMessages stickerMessage' : 'stickerMessage')}>
-									<Sticker i={chat['msg']} key={'messageStacker_'+chat["msg"]} canSend={false} />
+								<div key={'stickerMessageContainer'+i} className={(chat['unread'] === true ? 'unreadMessages stickerMessage' : 'stickerMessage')}>
+									<Sticker i={chat['msg']} key={'messageSticker_'+chat["msg"]} canSend={false} />
 								</div>
 					]
 					

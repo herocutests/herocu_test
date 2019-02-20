@@ -6,11 +6,27 @@ import Chat from "./Chat";
 import Sticker from "./Sticker";
 
 class ChatMessagesBlock extends Component {
+	stickerPacks = {
+		1 : {
+			'title' : "Kitty",
+			'url' : 'https://s.tcdn.co/b9b/62e/b9b62ef1-afaf-3edf-b64c-ddce090ef749/',
+			'count' : 48
+		},
+		2 : {
+			'title' : "Porn Actress",
+			'url' : 'https://s.tcdn.co/7c1/9d4/7c19d4f0-978b-3c2f-ac5c-e2a4297d108d/',
+			'count' : 25
+		}
+	}
+
 	getStickers(){
 	    let img = [];
-		for(var i = 1; i <= 48; i++){ 
-			img.push(<Sticker key={"sticker_"+i} i={i} sendSticker={this.props.sendSticker} />)
-		}
+		Object.keys(this.stickerPacks).map(i => {
+			img.push(<p className="ctickerTitle" key={"stickerTitle_"+i} >{this.stickerPacks[i]['title']}</p>);
+			for(var k = 1; k <= this.stickerPacks[i]['count']; k++){ 
+				img.push(<Sticker key={"sticker_"+i+'_'+k} i={this.stickerPacks[i]['url']+k} sendSticker={this.props.sendSticker} />);
+			}
+		})
 		return img
 	}
 	render(){

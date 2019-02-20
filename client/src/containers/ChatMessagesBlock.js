@@ -16,6 +16,11 @@ class ChatMessagesBlock extends Component {
 			'title' : "Porn Actress",
 			'url' : 'https://s.tcdn.co/7c1/9d4/7c19d4f0-978b-3c2f-ac5c-e2a4297d108d/',
 			'count' : 25
+		},
+		3 : {
+			'title' : "Stay fit",
+			'url' : 'https://s.tcdn.co/76b/77d/76b77dbb-5b99-39f3-904f-ca92ba9af20b/',
+			'count' : 30
 		}
 	}
 
